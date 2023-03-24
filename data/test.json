@@ -1,0 +1,10 @@
+{
+  "errors": {
+    "legal_last_name": ["ERR001"],
+    "gender": ["ERR001"],
+    "citizenship_country_code": ["ERR001"],
+    "email_address": ["ERR001"],
+    "phone_number": ["ERR001"],
+    "desired_location_country_code": ["ERR001"]
+  }
+}
