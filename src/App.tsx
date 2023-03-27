@@ -9,7 +9,7 @@ function interceptor(
   url: string,
   method: string,
   statusCode: number,
-  responseBody: string
+  responseBody?: string
 ) {
   const options: ResponseInit = {
     status: statusCode,
@@ -83,7 +83,7 @@ function App() {
    *
    * @returns
    */
-  const handleStart = async () => {
+  const handleApply = async () => {
     console.log("Getting The active tabId");
     const { url, method, statusCode, responseBody } = config;
     const tab = await getTab();
@@ -123,18 +123,13 @@ function App() {
       responseBody: string;
     };
 
-    if (!url || !method) {
-      alert("Please fill the form");
-      return;
-    }
     updateConfig({ url, method, statusCode, responseBody });
   };
 
   /**
    * Enables the apply rules buttons
    */
-  const isValid =
-    config.url && config.method && config.statusCode && config.responseBody;
+  const isValid = config.url && config.method && config.statusCode;
 
   return (
     <main className="p-4 w-80">
@@ -214,7 +209,7 @@ function App() {
           <button
             className="btn btn-sm btn-primary"
             type="button"
-            onClick={handleStart}
+            onClick={handleApply}
             disabled={!isValid}
           >
             Apply

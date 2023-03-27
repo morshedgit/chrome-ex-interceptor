@@ -4,7 +4,7 @@ type Config = {
   url: string;
   method: string;
   statusCode: number;
-  responseBody: string;
+  responseBody?: string;
 };
 
 export const useConfig = create<{
