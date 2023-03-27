@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useConfig } from "./store/useConfig";
 
-function getTabId() {
-  return chrome.tabs.query({ active: true }).then((tabs) => tabs[0].id);
+function getTab() {
+  return chrome.tabs.query({ active: true }).then((tabs) => tabs[0]);
 }
 
 function interceptor(
@@ -16,7 +17,6 @@ function interceptor(
       "Content-Type": "application/json",
     },
   };
-  const interceptorResponse = new Response(responseBody, options);
 
   document.title = `Intercepted: ${document.title}`;
   document.body.style.borderTop = "5px solid red";
@@ -35,9 +35,7 @@ function interceptor(
 
     console.log("Return Error Response");
 
-    console.log(interceptorResponse);
-
-    return interceptorResponse;
+    return new Response(responseBody, options);
   };
 }
 
@@ -75,6 +73,7 @@ const options: Option[] = [
 ];
 
 function App() {
+  const [activeTab, setActiveTab] = useState<chrome.tabs.Tab | undefined>();
   const { config } = useConfig((state) => ({ config: state.config }));
   const { updateConfig } = useConfig((state) => ({
     updateConfig: state.updateConfig,
@@ -87,7 +86,11 @@ function App() {
   const handleStart = async () => {
     console.log("Getting The active tabId");
     const { url, method, statusCode, responseBody } = config;
-    const tabId = await getTabId();
+    const tab = await getTab();
+
+    setActiveTab(tab);
+    const tabId = tab.id;
+
     if (!tabId) return;
 
     chrome.scripting
@@ -127,9 +130,16 @@ function App() {
     updateConfig({ url, method, statusCode, responseBody });
   };
 
+  /**
+   * Enables the apply rules buttons
+   */
+  const isValid =
+    config.url && config.method && config.statusCode && config.responseBody;
+
   return (
     <main className="p-4 w-80">
       <h1 className="text-xl font-bold">Intercept Fetch Requests</h1>
+      <h2>Active Tab: {activeTab?.title}</h2>
       <form onSubmit={handleSubmit}>
         <fieldset className="border border-solid border-primary p-4 rounded-lg">
           <legend>Filters</legend>
@@ -205,6 +215,7 @@ function App() {
             className="btn btn-sm btn-primary"
             type="button"
             onClick={handleStart}
+            disabled={!isValid}
           >
             Apply
           </button>
