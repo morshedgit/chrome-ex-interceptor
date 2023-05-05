@@ -48,15 +48,16 @@ export type Config = {
   method: string;
   statusCode: number;
   responseBody?: string;
+  selected?: boolean;
 };
-type Configs = Record<ConfigKey, Config>;
+export type Configs = Record<ConfigKey, Config>;
 
 export const useConfig = create<{
   configs: Configs;
   init: () => void;
   updateConfig: (conf: Config) => void;
   addConfig: (conf: Config) => void;
-  removeConfig: (conf: Config) => void;
+  removeConfig: (configKey: ConfigKey) => void;
 }>((set) => ({
   configs: {
     initial: {
@@ -90,13 +91,11 @@ export const useConfig = create<{
       },
     }));
   },
-  removeConfig: async (conf: Config) => {
-    set((state) => ({
-      configs: {
-        ...state.configs,
-        [conf.key]: conf,
-      },
-    }));
+  removeConfig: async (configKey: ConfigKey) => {
+    set((state) => {
+      const { [configKey]: removedConfig, ...remainingConfigs } = state.configs;
+      return { ...state, configs: remainingConfigs };
+    });
   },
 }));
 

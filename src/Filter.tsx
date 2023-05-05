@@ -1,7 +1,12 @@
 import { Config, ConfigKey, useConfig } from "./store/useConfig";
 import { options } from "./data/options";
+import FilterHeader from "./FilterHeader";
 
-function Filter(props: { config?: Config }) {
+function Filter(props: {
+  config?: Config;
+  isActive: boolean;
+  onEdit: (configKey?: ConfigKey) => void;
+}) {
   const config = props.config ?? {
     key: "new",
     url: "test",
@@ -64,7 +69,13 @@ function Filter(props: { config?: Config }) {
 
   return (
     <li>
-      <form onSubmit={handleSubmit}>
+      <FilterHeader {...props} />
+      <form
+        onSubmit={handleSubmit}
+        className={`h-0 overflow-hidden ${
+          props.isActive ? "h-[30rem]" : ""
+        } transition-[height]`}
+      >
         <fieldset className="border border-solid border-primary p-4 rounded-lg">
           <legend>Filters</legend>
           <label htmlFor="url" className="block">
