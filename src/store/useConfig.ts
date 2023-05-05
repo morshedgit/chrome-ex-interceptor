@@ -14,6 +14,7 @@ class AppStorage {
     if (chrome?.storage?.local) {
       return new Promise((resolve) => {
         this.storage.set(data, () => {
+          console.log(`Setting data: ${JSON.stringify(data)}`);
           resolve();
         });
       });
@@ -27,6 +28,7 @@ class AppStorage {
     if (chrome?.storage?.local) {
       return new Promise((resolve) => {
         this.storage.get(key, (result: any) => {
+          console.log(`Reading date: ${JSON.stringify(result)}`);
           resolve(result[key]);
         });
       });
@@ -39,36 +41,68 @@ class AppStorage {
 
 const appStorage = new AppStorage();
 
-type Config = {
+export type ConfigKey = string;
+export type Config = {
+  key: ConfigKey;
   url: string;
   method: string;
   statusCode: number;
   responseBody?: string;
 };
+type Configs = Record<ConfigKey, Config>;
 
 export const useConfig = create<{
-  config: Config;
+  configs: Configs;
   init: () => void;
   updateConfig: (conf: Config) => void;
+  addConfig: (conf: Config) => void;
+  removeConfig: (conf: Config) => void;
 }>((set) => ({
-  config: {
-    url: "",
-    method: "GET",
-    statusCode: 200,
-    responseBody: "{}",
+  configs: {
+    initial: {
+      key: "initial",
+      url: "",
+      method: "GET",
+      statusCode: 200,
+      responseBody: "{}",
+    },
   },
   init: async () => {
-    const result = await appStorage.get<Config>("config");
-    set({ config: result || undefined });
+    const result = await appStorage.get<Configs>("config");
+    if (!result) return;
+    set({
+      configs: result,
+    });
   },
   updateConfig: async (conf: Config) => {
-    set({ config: conf });
-    await appStorage.set("config", conf);
+    set((state) => ({
+      configs: {
+        ...state.configs,
+        [conf.key]: conf,
+      },
+    }));
+  },
+  addConfig: async (conf: Config) => {
+    set((state) => ({
+      configs: {
+        ...state.configs,
+        [conf.key]: conf,
+      },
+    }));
+  },
+  removeConfig: async (conf: Config) => {
+    set((state) => ({
+      configs: {
+        ...state.configs,
+        [conf.key]: conf,
+      },
+    }));
   },
 }));
 
 useConfig.getState().init();
 
 useConfig.subscribe((state) => {
-  useConfig.getState().updateConfig(state.config);
+  console.log(`Updating state: ${JSON.stringify(state)}`);
+  appStorage.set("config", state.configs);
 });
