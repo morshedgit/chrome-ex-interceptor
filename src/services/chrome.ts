@@ -15,24 +15,20 @@ function interceptor(args: string) {
     init?: RequestInit | undefined
   ): Promise<Response> => {
     for (const filter of filters) {
-      if (typeof input === "string") {
-        if (filter.method === init?.method)
-          return new Response(filter.responseBody, {
-            status: filter.statusCode,
-            headers: { "Content-Type": "application/json" },
-          });
-        else return oldFetch.call(window, input, init);
-      }
+      if (filter.method !== init?.method) continue;
 
-      if (input instanceof URL)
-        if (filter.method === init?.method && input.href.includes(filter.url))
-          return new Response(filter.responseBody, {
-            status: filter.statusCode,
-            headers: { "Content-Type": "application/json" },
-          });
-        else return oldFetch.call(window, input, init);
-
-      if (filter.method === init?.method && input.url.includes(filter.url))
+      if (typeof input === "string" && input.includes(filter.url)) {
+        console.log(`Request intercepted`);
+        return new Response(filter.responseBody, {
+          status: filter.statusCode,
+          headers: { "Content-Type": "application/json" },
+        });
+      } else if (input instanceof URL && input.href.includes(filter.url))
+        return new Response(filter.responseBody, {
+          status: filter.statusCode,
+          headers: { "Content-Type": "application/json" },
+        });
+      else if (input instanceof Request && input.url.includes(filter.url))
         return new Response(filter.responseBody, {
           status: filter.statusCode,
           headers: { "Content-Type": "application/json" },
@@ -48,9 +44,11 @@ export const applyFilter = async (configs: Configs) => {
 
   if (!tabId) return;
 
-  const args = JSON.stringify(
-    Object.values(configs).filter((config) => config.selected)
+  const selectedFilters = Object.values(configs).filter(
+    (config) => config.selected
   );
+
+  const args = JSON.stringify(selectedFilters);
 
   chrome.scripting
     .executeScript({
