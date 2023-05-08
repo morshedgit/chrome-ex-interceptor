@@ -61,3 +61,37 @@ export const applyFilter = async (configs: Configs) => {
 
   return tab;
 };
+
+export const applyFilter2 = async (configs: Configs) => {
+  const tab = await getTab();
+  const tabId = tab.id;
+
+  if (!tabId) return;
+
+  // const selectedFilters = Object.values(configs).filter(
+  //   (config) => config.selected
+  // );
+
+  // const args = JSON.stringify(selectedFilters);
+
+  chrome.scripting
+    .registerContentScripts([
+      {
+        id: "session-script",
+        js: ["content.js"],
+        persistAcrossSessions: false,
+        matches: ["*://*.studyporter.com/*"],
+        runAt: "document_start",
+      },
+    ])
+    .then((result) => console.log(`injected a script with id: ${result}`));
+
+  return tab;
+};
+
+export const getInjectedScripts = async (
+  filter: chrome.scripting.ContentScriptFilter
+) => {
+  const result = await chrome.scripting.getRegisteredContentScripts(filter);
+  return result;
+};

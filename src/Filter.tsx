@@ -1,6 +1,5 @@
 import { Config, ConfigKey, useConfig } from "./store/useConfig";
 import { options } from "./data/options";
-import FilterHeader from "./FilterHeader";
 
 function Filter(props: {
   config?: Config;
