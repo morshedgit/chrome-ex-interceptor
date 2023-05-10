@@ -1,4 +1,4 @@
-import { Config, Configs } from "../store/useConfig";
+import { Config, Configs } from "../hooks/useConfig";
 
 function getTab() {
   return chrome.tabs.query({ active: true }).then((tabs) => tabs[0]);
@@ -62,7 +62,7 @@ export const applyFilter = async (configs: Configs) => {
   return tab;
 };
 
-export const applyFilter2 = async (configs: Configs) => {
+export const applyFilterOnDocumentStart = async (configs: Configs) => {
   const tab = await getTab();
   const tabId = tab.id;
 

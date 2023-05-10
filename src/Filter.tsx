@@ -1,4 +1,4 @@
-import { Config, ConfigKey, useConfig } from "./store/useConfig";
+import { Config, ConfigKey, useConfig } from "./hooks/useConfig";
 import { options } from "./data/options";
 
 function Filter(props: {
@@ -69,8 +69,6 @@ function Filter(props: {
     }
   };
 
-  console.log({ config: props.config });
-
   return (
     <form
       onSubmit={handleSubmit}
@@ -88,7 +86,7 @@ function Filter(props: {
           name="url"
           defaultValue={config.url}
           placeholder="dev.url.studyporter.com"
-          className="w-full input input-sm"
+          className="w-full input input-sm z-10"
         />
         <label htmlFor="method" className="block">
           Request Method

@@ -102,6 +102,6 @@ export const useConfig = create<{
 useConfig.getState().init();
 
 useConfig.subscribe((state) => {
-  console.log(`Updating state: ${JSON.stringify(state)}`);
+  console.log(state);
   appStorage.set("config", state.configs);
 });

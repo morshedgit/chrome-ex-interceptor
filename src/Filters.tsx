@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { ConfigKey, useConfig } from "./store/useConfig";
+import { ConfigKey, useConfig } from "./hooks/useConfig";
 import Filter from "./Filter";
-import { applyFilter, applyFilter2 } from "./services/chrome";
+import { applyFilter, applyFilterOnDocumentStart } from "./services/chrome";
 import FilterHeader from "./FilterHeader";
 
 function Filters() {
   const [activeTab, setActiveTab] = useState<chrome.tabs.Tab | undefined>();
+  const [isOnDocStart, setIsOnDocStart] = useState(false);
   const [activeFilter, setActiveFilter] = useState<ConfigKey>();
 
   const { configs, config } = useConfig((state) => ({
@@ -19,29 +20,42 @@ function Filters() {
    */
   const handleApply = async () => {
     console.log("Getting The active tabId");
-    const tab = await applyFilter(configs);
-    setActiveTab(tab);
-  };
-
-  /**
-   *
-   * @returns
-   */
-  const handleApply2 = async () => {
-    console.log("Getting The active tabId");
-    const tab = await applyFilter2(configs);
+    const applyAction = isOnDocStart ? applyFilterOnDocumentStart : applyFilter;
+    const tab = await applyAction(configs);
     setActiveTab(tab);
   };
 
   return (
-    <div className="p-4 w-80">
-      <h1 className="text-xl font-bold">Intercept Fetch Requests</h1>
-      <div className="grid grid-cols-2 gap-2">
-        <h2 className="truncate">{activeTab?.title}</h2>
-        <div className="flex justify-end gap-2">
+    <div className="my-2">
+      <div
+        className={`${
+          activeFilter ? "invisible" : "visible"
+        } flex justify-end my-2 btn-group`}
+      >
+        <button
+          className="btn btn-xs btn-primary"
+          type="button"
+          onClick={handleApply}
+        >
+          {isOnDocStart ? "Apply on document start" : "Apply"}
+        </button>
+        <button
+          className="btn btn-xs btn-primary relative group"
+          type="button"
+          tabIndex={0}
+          onClick={() => setIsOnDocStart((v) => !v)}
+          disabled
+        >
+          <span className="rotate-90">{`🔃`}</span>
+        </button>
+      </div>
+
+      <div className="flex gap-2">
+        <h2 className="">{activeTab?.title}</h2>
+        <div className="flex-grow flex flex-wrap justify-end gap-2">
           {!activeFilter ? (
             <button
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-xs"
               title="Add new filter"
               onClick={() => setActiveFilter("New")}
             >
@@ -49,53 +63,42 @@ function Filters() {
             </button>
           ) : (
             <button
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-xs"
               title="Add new filter"
               onClick={() => setActiveFilter(undefined)}
             >
               {`<`}
             </button>
           )}
-
-          {!activeFilter && (
-            <>
-              <button
-                className="btn btn-sm btn-primary"
-                type="button"
-                onClick={handleApply}
-              >
-                Apply
-              </button>
-              <button
-                className="btn btn-sm btn-primary"
-                type="button"
-                onClick={handleApply2}
-              >
-                Apply2
-              </button>
-            </>
-          )}
         </div>
       </div>
       <section className="flex">
         <ul
-          className={`transition-[width] list-none pl-none flex flex-col gap-2 my-2 ${
-            activeFilter ? "w-0" : "w-[18rem]"
+          className={`transition-[width] pl-none flex flex-col gap-2 my-2 ${
+            activeFilter ? "w-[3rem]" : "w-[18rem]"
           } overflow-hidden`}
         >
-          {activeFilter === "New" && <Filter active onEdit={setActiveFilter} />}
           {Object.values(configs).map((config) => (
-            <FilterHeader
+            <li
               key={config.key}
-              config={config}
-              active={config.key === activeFilter}
-              onEdit={setActiveFilter}
-            />
+              className={`${
+                activeFilter === config.key
+                  ? "border-0 border-primary border-solid border-l-2"
+                  : ""
+              }`}
+            >
+              <FilterHeader
+                key={config.key}
+                config={config}
+                active={config.key === activeFilter}
+                onEdit={setActiveFilter}
+              />
+            </li>
           ))}
         </ul>
         <div
           className={`transition-[width] ${
-            activeFilter ? "w-[18rem]" : "w-0"
+            activeFilter ? "w-[15rem]" : "w-0"
           } overflow-hidden`}
         >
           <Filter
