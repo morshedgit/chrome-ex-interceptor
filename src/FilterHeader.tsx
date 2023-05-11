@@ -11,10 +11,9 @@ function FilterHeader(props: {
     updateConfig: state.updateConfig,
   }));
 
-  const [checked, setChecked] = useState(false);
-
   const handleRemoveConfig = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!props.config) return;
     removeConfig(props.config.key);
   };
